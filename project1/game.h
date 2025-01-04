@@ -15,6 +15,7 @@
 #define COLOR_BLUE 0x001F
 #define COLOR_YELLOW 0xFFE0
 #define COLOR_WHITE 0xFFFF
+#define COLOR_RED 0xF800
 
 // Pac-Man settings
 #define PACMAN_SPEED 6
