@@ -17,7 +17,7 @@
 #define COLOR_WHITE 0xFFFF
 
 // Pac-Man settings
-#define PACMAN_SPEED 2
+#define PACMAN_SPEED 6
 #define PACMAN_SIZE 8
 
 
@@ -44,7 +44,7 @@ extern int current_direction;
 // Function declarations
 void init_game(void);
 void update_game(void);
-void draw_game(void);
+void draw_game(int full_redraw);
 
 // Additional game variables
 extern int maze[MAZE_HEIGHT][MAZE_WIDTH];

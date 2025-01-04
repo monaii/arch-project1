@@ -60,49 +60,78 @@ void init_game(void) {
 }
 
 // Update game state
+// Update game state
 void update_game(void) {
-    if(game_state != GAME_RUNNING) return;
-    
-    // Move Pac-Man based on current_direction
-    switch(current_direction) {
+    if (game_state != GAME_RUNNING) return; // Only update if the game is running
+	  char dir_debug[32];
+    sprintf(dir_debug, "Direction: %d", current_direction);
+    GUI_Text(10, 340, (uint8_t*)dir_debug, COLOR_WHITE, COLOR_BLACK);
+	
+	
+    // Temporary variables for the next position
+    int next_x = pacman_x;
+    int next_y = pacman_y;
+		char position_debug[32];
+		sprintf(position_debug, "X: %d, Y: %d", pacman_x, pacman_y);
+		GUI_Text(10, 300, (uint8_t*)position_debug, COLOR_WHITE, COLOR_BLACK);
+
+
+    // Calculate the next position based on the current direction
+    switch (current_direction) {
         case 1: // UP
-            pacman_y -= PACMAN_SPEED;
+            next_y -= PACMAN_SPEED;
             break;
         case 2: // DOWN
-            pacman_y += PACMAN_SPEED;
+            next_y += PACMAN_SPEED;
             break;
         case 3: // LEFT
-            pacman_x -= PACMAN_SPEED;
+            next_x -= PACMAN_SPEED;
             break;
         case 4: // RIGHT
-            pacman_x += PACMAN_SPEED;
+            next_x += PACMAN_SPEED;
             break;
+        default:
+            return; // No movement if no direction is set
     }
-    
-    // Keep Pac-Man in bounds
-    if(pacman_x < 0) pacman_x = 0;
-    if(pacman_x > 230) pacman_x = 230;
-    if(pacman_y < 0) pacman_y = 0;
-    if(pacman_y > 280) pacman_y = 280;
+		sprintf(position_debug, "Next X: %d, Next Y: %d", next_x, next_y);
+    GUI_Text(10, 320, (uint8_t*)position_debug, COLOR_WHITE, COLOR_BLACK);
+
+    // Convert the next position to maze grid coordinates
+    int maze_x = next_x / CELL_SIZE;
+    int maze_y = next_y / CELL_SIZE;
+
+    // Check if the next position is within bounds and not a wall
+    if (maze_x >= 0 && maze_x < MAZE_WIDTH &&
+        maze_y >= 0 && maze_y < MAZE_HEIGHT &&
+        maze[maze_y][maze_x] != WALL) {
+        // Update Pac-Man's position if the move is valid
+        pacman_x = next_x;
+        pacman_y = next_y;
+    } else {
+        // Stop movement if the next position is a wall
+        current_direction = 0;
+    }
 }
 
 // Draw game elements
-void draw_game(void) {
+void draw_game(int full_redraw) {
     int i, j, wx, wy;
     char score_text[16];
     char time_text[16];
     char lives_text[16];
     int maze_offset_y = 40;  // Space for text above maze
-    
-    // Clear screen first
-    LCD_Clear(COLOR_BLACK);
-    
-    // Draw score and timer before maze
-    sprintf(score_text, "Score: %d", score);
-    GUI_Text(8, 20, (uint8_t*)score_text, COLOR_WHITE, COLOR_BLACK);
-    
-    sprintf(time_text, "Time: %d", countdown);
-    GUI_Text(160, 20, (uint8_t*)time_text, COLOR_WHITE, COLOR_BLACK);
+	
+    if(full_redraw) {
+			
+        // Only clear and redraw everything on full redraw
+        LCD_Clear(COLOR_BLACK);
+        
+        // Draw score and timer before maze
+        sprintf(score_text, "Score: %d", score);
+        GUI_Text(8, 20, (uint8_t*)score_text, COLOR_WHITE, COLOR_BLACK);
+        
+        sprintf(time_text, "Time: %d", countdown);
+        GUI_Text(160, 20, (uint8_t*)time_text, COLOR_WHITE, COLOR_BLACK);
     
     // Draw maze
     for(i = 0; i < MAZE_HEIGHT; i++) {
@@ -136,13 +165,26 @@ void draw_game(void) {
             }
         }
     }
-    
-    // Draw Pac-Man
+	}
+   // Always draw Pac-Man (erase old position first)
+    static int old_x = -1, old_y = -1;
+    if(old_x != -1) {
+        // Erase old position
+        for(i = 0; i < PACMAN_SIZE; i++) {
+            for(j = 0; j < PACMAN_SIZE; j++) {
+                LCD_SetPoint(old_x + i, old_y + j + maze_offset_y, COLOR_BLACK);
+            }
+        }
+    }
+		  // Draw new position
     for(i = 0; i < PACMAN_SIZE; i++) {
         for(j = 0; j < PACMAN_SIZE; j++) {
             LCD_SetPoint(pacman_x + i, pacman_y + j + maze_offset_y, COLOR_YELLOW);
         }
     }
+    old_x = pacman_x;
+    old_y = pacman_y;
+
     
     // Draw lives at bottom
     sprintf(lives_text, "Lives: %d", lives);

@@ -24,26 +24,34 @@
 
 
 void RIT_IRQHandler (void) {
-    // Joystick UP
-    if((LPC_GPIO1->FIOPIN & (1<<29)) == 0) {
-        current_direction = 1;
-    }
-    // Joystick DOWN
-    else if((LPC_GPIO1->FIOPIN & (1<<26)) == 0) {
-        current_direction = 2;
-    }
-    // Joystick LEFT
-    else if((LPC_GPIO1->FIOPIN & (1<<27)) == 0) {
-        current_direction = 3;
-    }
-    // Joystick RIGHT
-    else if((LPC_GPIO1->FIOPIN & (1<<28)) == 0) {
-        current_direction = 4;
-    }
+    static int counter = 0;
+    char debug[32];
+    sprintf(debug, "Counter: %d", counter++);
+    GUI_Text(10, 200, (uint8_t*)debug, COLOR_WHITE, COLOR_BLACK);
     
     if(game_state == GAME_RUNNING) {
+        // First check joystick
+        if((LPC_GPIO1->FIOPIN & (1<<29)) == 0) {
+            current_direction = 1;
+            GUI_Text(10, 220, (uint8_t*)"UP!", COLOR_WHITE, COLOR_BLACK);
+        }
+        else if((LPC_GPIO1->FIOPIN & (1<<26)) == 0) {
+            current_direction = 2;
+            GUI_Text(10, 240, (uint8_t*)"DOWN!", COLOR_WHITE, COLOR_BLACK);
+        }
+        else if((LPC_GPIO1->FIOPIN & (1<<27)) == 0) {
+            current_direction = 3;
+         
+        }
+        else if((LPC_GPIO1->FIOPIN & (1<<28)) == 0) {
+            current_direction = 4;
+            GUI_Text(10, 280, (uint8_t*)"RIGHT!", COLOR_WHITE, COLOR_BLACK);
+        }
+        
+        // Then update and draw
         update_game();
-        draw_game();
+				draw_game(0);
+				
     }
     
     LPC_RIT->RICTRL |= 0x1;

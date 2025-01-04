@@ -45,6 +45,8 @@ int main (void) {
 	
   while (1) {                           /* Loop forever                       */	
 		__ASM("wfi");
+		
+		
   }
 
 }
