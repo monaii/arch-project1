@@ -12,6 +12,7 @@ int current_direction = 0;
 int maze[MAZE_HEIGHT][MAZE_WIDTH] = {0};
 int pills_remaining = 240;
 int maze_offset_y = 40;  // Global maze offset
+int timer_ticks = 0;  
 
 void init_game(void) {
     int i, j;
@@ -65,50 +66,66 @@ void update_game(void) {
     int next_x = pacman_x;
     int next_y = pacman_y;
     
+    // Only calculate next position if there's a direction
     switch (current_direction) {
         case 1: next_y -= PACMAN_SPEED; break;  // UP
         case 2: next_y += PACMAN_SPEED; break;  // DOWN
         case 3: next_x -= PACMAN_SPEED; break;  // LEFT
         case 4: next_x += PACMAN_SPEED; break;  // RIGHT
+        default: return;  // No movement if no direction
     }
 
-    // Convert to maze coordinates (accounting for maze_offset_y)
+    // Convert to maze coordinates
     int maze_x = next_x / CELL_SIZE;
     int maze_y = (next_y) / CELL_SIZE;
 
-    // Check collision and update position
-    if (maze_x >= 0 && maze_x < MAZE_WIDTH && 
-        maze_y >= 0 && maze_y < MAZE_HEIGHT && 
-        maze[maze_y][maze_x] != WALL) {
+    // Check wall collision
+    if (maze_x < 0 || maze_x >= MAZE_WIDTH || 
+        maze_y < 0 || maze_y >= MAZE_HEIGHT ||
+        maze[maze_y][maze_x] == WALL) {
+        // Just stop at wall, don't change game state
+        current_direction = 0;  // Stop and wait for new input
+        return;
+    }
+
+    // If we get here, movement is valid
+    pacman_x = next_x;
+    pacman_y = next_y;
+    
+    // Handle pill collection
+    if(maze[maze_y][maze_x] == PILL) {
+        score += 10;
+        maze[maze_y][maze_x] = EMPTY;
+        pills_remaining--;
         
-        // Update position
-        pacman_x = next_x;
-        pacman_y = next_y;
-        
-        // Collect pills
-        if(maze[maze_y][maze_x] == PILL) {
-            score += 10;
-            maze[maze_y][maze_x] = EMPTY;
-            pills_remaining--;
-        }
-        else if(maze[maze_y][maze_x] == POWER_PILL) {
-            score += 50;
-            maze[maze_y][maze_x] = EMPTY;
-            pills_remaining--;
-        }
-        
-        // Check for victory
-        if(pills_remaining <= 0) {
-            game_state = GAME_WIN;
+        // Check for extra life (Spec. 6)
+        if(score % 1000 == 0) {
+            lives++;
         }
     }
-}
+    else if(maze[maze_y][maze_x] == POWER_PILL) {
+        score += 50;
+        maze[maze_y][maze_x] = EMPTY;
+        pills_remaining--;
+        
+        // Check for extra life here too
+        if(score % 1000 == 0) {
+            lives++;
+        }
+    }
 
+    // Victory condition - all pills collected
+    if(pills_remaining == 0) {
+        game_state = GAME_WIN;
+    }
+}
 void draw_game(int full_redraw) {
     if(game_state == GAME_OVER) {
         LCD_Clear(COLOR_BLACK);
         GUI_Text(100, 140, (uint8_t*)"GAME OVER!", COLOR_RED, COLOR_BLACK);
-        GUI_Text(70, 160, (uint8_t*)"Final Score: ", COLOR_WHITE, COLOR_BLACK);
+        char score_text[16];
+        sprintf(score_text, "Final Score: %d", score);
+        GUI_Text(80, 160, (uint8_t*)score_text, COLOR_WHITE, COLOR_BLACK);
         return;
     }
     
@@ -118,17 +135,17 @@ void draw_game(int full_redraw) {
         GUI_Text(70, 160, (uint8_t*)"Final Score: ", COLOR_WHITE, COLOR_BLACK);
         return;
     }
-    
-    if(full_redraw) {
-        LCD_Clear(COLOR_BLACK);
-        
-        // Draw score and timer
+      // Draw score and timer
         char text[16];
         sprintf(text, "Score: %d", score);
         GUI_Text(8, 20, (uint8_t*)text, COLOR_WHITE, COLOR_BLACK);
         sprintf(text, "Time: %d", countdown);
         GUI_Text(160, 20, (uint8_t*)text, COLOR_WHITE, COLOR_BLACK);
         
+    if(full_redraw) {
+        LCD_Clear(COLOR_BLACK);
+        
+      
         // Draw maze
         int i, j;
         for(i = 0; i < MAZE_HEIGHT; i++) {

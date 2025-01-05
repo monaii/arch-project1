@@ -51,4 +51,7 @@ void draw_game(int full_redraw);
 extern int maze[MAZE_HEIGHT][MAZE_WIDTH];
 extern int pills_remaining;
 
+// For counting RIT ticks
+extern int timer_ticks; 
+
 #endif
