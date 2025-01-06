@@ -23,11 +23,12 @@
 ******************************************************************************/
 
 
+// In RIT_IRQHandler
 void RIT_IRQHandler (void) {
+    // Timer logic only when game is running
     if(game_state == GAME_RUNNING) {
-        // Timer logic
         timer_ticks++;
-        if(timer_ticks >= 1) {  // Assuming RIT is 50ms, 20 ticks = 1 second
+        if(timer_ticks >= 5) {
             timer_ticks = 0;
             if(countdown > 0) {
                 countdown--;
@@ -37,17 +38,17 @@ void RIT_IRQHandler (void) {
             }
         }
         
-        // Existing joystick handling
-        if((LPC_GPIO1->FIOPIN & (1<<29)) == 0) {        // UP
+        // Joystick handling and updates only when not paused
+        if((LPC_GPIO1->FIOPIN & (1<<29)) == 0) {
             current_direction = 1;
         }
-        else if((LPC_GPIO1->FIOPIN & (1<<26)) == 0) {   // DOWN
+        else if((LPC_GPIO1->FIOPIN & (1<<26)) == 0) {
             current_direction = 2;
         }
-        else if((LPC_GPIO1->FIOPIN & (1<<27)) == 0) {   // LEFT
+        else if((LPC_GPIO1->FIOPIN & (1<<27)) == 0) {
             current_direction = 3;
         }
-        else if((LPC_GPIO1->FIOPIN & (1<<28)) == 0) {   // RIGHT
+        else if((LPC_GPIO1->FIOPIN & (1<<28)) == 0) {
             current_direction = 4;
         }
         
