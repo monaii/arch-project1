@@ -18,7 +18,7 @@
 #define COLOR_RED 0xF800
 
 // Pac-Man settings
-#define PACMAN_SPEED 6
+#define PACMAN_SPEED 10
 #define PACMAN_SIZE 8
 
 

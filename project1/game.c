@@ -10,7 +10,7 @@ int pacman_x = 120;
 int pacman_y = 160;
 int current_direction = 0;
 int maze[MAZE_HEIGHT][MAZE_WIDTH] = {0};
-int pills_remaining = 240;
+int pills_remaining = 2;
 int maze_offset_y = 40;  // Global maze offset
 int timer_ticks = 0;  
 
@@ -50,7 +50,7 @@ void init_game(void) {
     game_state = GAME_PAUSED;
     score = 0;
     lives = 1;
-    countdown = 60;
+    countdown = 5;
     pacman_x = 120;
     pacman_y = 160;
     
@@ -132,7 +132,9 @@ void draw_game(int full_redraw) {
     if(game_state == GAME_WIN) {
         LCD_Clear(COLOR_BLACK);
         GUI_Text(100, 140, (uint8_t*)"VICTORY!", COLOR_YELLOW, COLOR_BLACK);
-        GUI_Text(70, 160, (uint8_t*)"Final Score: ", COLOR_WHITE, COLOR_BLACK);
+        char score_text[16];
+        sprintf(score_text, "Final Score: %d", score);
+        GUI_Text(80, 160, (uint8_t*)score_text, COLOR_WHITE, COLOR_BLACK);
         return;
     }
       // Draw score and timer

@@ -28,7 +28,7 @@ void RIT_IRQHandler (void) {
     // Timer logic only when game is running
     if(game_state == GAME_RUNNING) {
         timer_ticks++;
-        if(timer_ticks >= 5) {
+        if(timer_ticks >= 2) {
             timer_ticks = 0;
             if(countdown > 0) {
                 countdown--;
