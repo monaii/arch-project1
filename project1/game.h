@@ -33,6 +33,11 @@
 #define PILL 2
 #define POWER_PILL 3
 
+//teleport
+#define TELEPORT_Y 15    // Specific Y position for teleport
+#define LEFT_EDGE 2
+#define RIGHT_EDGE 28
+
 // Game variables
 extern int game_state;
 extern int score;

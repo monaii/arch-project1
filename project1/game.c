@@ -10,9 +10,10 @@ int pacman_x = 120;
 int pacman_y = 160;
 int current_direction = 0;
 int maze[MAZE_HEIGHT][MAZE_WIDTH] = {0};
-int pills_remaining = 2;
+int pills_remaining = 0;
 int maze_offset_y = 40;  // Global maze offset
 int timer_ticks = 0;  
+int VICTORY_SCORE =3000;
 
 void init_game(void) {
     int i, j;
@@ -50,7 +51,7 @@ void init_game(void) {
     game_state = GAME_PAUSED;
     score = 0;
     lives = 1;
-    countdown = 5;
+    countdown = 60;
     pacman_x = 120;
     pacman_y = 160;
     
@@ -75,27 +76,31 @@ void update_game(void) {
         default: return;  // No movement if no direction
     }
 
-    // Convert to maze coordinates
-    int maze_x = next_x / CELL_SIZE;
-    int maze_y = (next_y) / CELL_SIZE;
+// Check both edges for collision
+int maze_x1 = next_x / CELL_SIZE;
+int maze_y1 = next_y / CELL_SIZE;
+int maze_x2 = (next_x + PACMAN_SIZE-1) / CELL_SIZE;
+int maze_y2 = (next_y + PACMAN_SIZE-1) / CELL_SIZE;
 
-    // Check wall collision
-    if (maze_x < 0 || maze_x >= MAZE_WIDTH || 
-        maze_y < 0 || maze_y >= MAZE_HEIGHT ||
-        maze[maze_y][maze_x] == WALL) {
-        // Just stop at wall, don't change game state
-        current_direction = 0;  // Stop and wait for new input
-        return;
-    }
+   // Check wall collision on both edges
+if (maze_x1 < 0 || maze_x2 >= MAZE_WIDTH || 
+    maze_y1 < 0 || maze_y2 >= MAZE_HEIGHT ||
+    maze[maze_y1][maze_x1] == WALL || 
+    maze[maze_y2][maze_x2] == WALL ||
+    maze[maze_y1][maze_x2] == WALL ||
+    maze[maze_y2][maze_x1] == WALL) {
+    current_direction = 0;
+    return;
+}
 
     // If we get here, movement is valid
     pacman_x = next_x;
     pacman_y = next_y;
     
     // Handle pill collection
-    if(maze[maze_y][maze_x] == PILL) {
+    if(maze[maze_y1][maze_x1] == PILL) {
         score += 10;
-        maze[maze_y][maze_x] = EMPTY;
+        maze[maze_y1][maze_x1] = EMPTY;
         pills_remaining--;
         
         // Check for extra life (Spec. 6)
@@ -103,9 +108,9 @@ void update_game(void) {
             lives++;
         }
     }
-    else if(maze[maze_y][maze_x] == POWER_PILL) {
+    else if(maze[maze_y1][maze_x1] == POWER_PILL) {
         score += 50;
-        maze[maze_y][maze_x] = EMPTY;
+        maze[maze_y1][maze_x1] = EMPTY;
         pills_remaining--;
         
         // Check for extra life here too
