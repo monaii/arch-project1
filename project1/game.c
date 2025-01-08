@@ -142,13 +142,7 @@ void draw_game(int full_redraw) {
         GUI_Text(80, 160, (uint8_t*)score_text, COLOR_WHITE, COLOR_BLACK);
         return;
     }
-      // Draw score and timer
-        char text[16];
-        sprintf(text, "Score: %d", score);
-        GUI_Text(8, 20, (uint8_t*)text, COLOR_WHITE, COLOR_BLACK);
-        sprintf(text, "Time: %d", countdown);
-        GUI_Text(160, 20, (uint8_t*)text, COLOR_WHITE, COLOR_BLACK);
-        
+      
     if(full_redraw) {
         LCD_Clear(COLOR_BLACK);
         
@@ -182,6 +176,13 @@ void draw_game(int full_redraw) {
             }
         }
     }
+		// Draw score and timer
+        char text[16];
+        sprintf(text, "Score: %d", score);
+        GUI_Text(8, 20, (uint8_t*)text, COLOR_WHITE, COLOR_BLACK);
+        sprintf(text, "Time: %d", countdown);
+        GUI_Text(160, 20, (uint8_t*)text, COLOR_WHITE, COLOR_BLACK);
+        
     
     // Draw Pac-Man (with position tracking)
     static int old_x = -1, old_y = -1;
