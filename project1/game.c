@@ -85,14 +85,21 @@ int maze_y2 = (next_y + PACMAN_SIZE-1) / CELL_SIZE;
    // Check wall collision on both edges
 if (maze_x1 < 0 || maze_x2 >= MAZE_WIDTH || 
     maze_y1 < 0 || maze_y2 >= MAZE_HEIGHT ||
-    maze[maze_y1][maze_x1] == WALL || 
+    ((maze_y1 != TELEPORT_Y) && (maze[maze_y1][maze_x1] == WALL || 
     maze[maze_y2][maze_x2] == WALL ||
     maze[maze_y1][maze_x2] == WALL ||
-    maze[maze_y2][maze_x1] == WALL) {
+    maze[maze_y2][maze_x1] == WALL))) {
     current_direction = 0;
     return;
 }
-
+// Add teleport code here
+if(next_y / CELL_SIZE == TELEPORT_Y) {
+    if(next_x < LEFT_EDGE * CELL_SIZE) {
+        next_x = (RIGHT_EDGE - 1) * CELL_SIZE;
+    } else if(next_x > (RIGHT_EDGE - 1) * CELL_SIZE) {
+        next_x = LEFT_EDGE * CELL_SIZE;
+    }
+}
     // If we get here, movement is valid
     pacman_x = next_x;
     pacman_y = next_y;
@@ -141,6 +148,16 @@ void draw_game(int full_redraw) {
 				if(game_state == GAME_PAUSED) {
         GUI_Text(100, 160, (uint8_t*)"PAUSE", COLOR_WHITE, COLOR_BLACK);
     }
+				
+	for(int x = 0; x < CELL_SIZE; x++) {
+   for(int y = 0; y < CELL_SIZE; y++) {
+       LCD_SetPoint(LEFT_EDGE * CELL_SIZE + x, 
+                   TELEPORT_Y * CELL_SIZE + y + maze_offset_y, COLOR_RED);
+       LCD_SetPoint((RIGHT_EDGE-1) * CELL_SIZE + x, 
+                   TELEPORT_Y * CELL_SIZE + y + maze_offset_y, COLOR_RED);
+   }
+}
+
         // Draw maze
         int i, j;
         for(i = 0; i < MAZE_HEIGHT; i++) {
