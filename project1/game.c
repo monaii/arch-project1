@@ -125,18 +125,11 @@ if (maze_x1 < 0 || maze_x2 >= MAZE_WIDTH ||
     }
 }
 void draw_game(int full_redraw) {
-    if(game_state == GAME_OVER) {
+	
+   if(game_state == GAME_OVER || game_state == GAME_WIN) {
         LCD_Clear(COLOR_BLACK);
-        GUI_Text(100, 140, (uint8_t*)"GAME OVER!", COLOR_RED, COLOR_BLACK);
-        char score_text[16];
-        sprintf(score_text, "Final Score: %d", score);
-        GUI_Text(80, 160, (uint8_t*)score_text, COLOR_WHITE, COLOR_BLACK);
-        return;
-    }
-    
-    if(game_state == GAME_WIN) {
-        LCD_Clear(COLOR_BLACK);
-        GUI_Text(100, 140, (uint8_t*)"VICTORY!", COLOR_YELLOW, COLOR_BLACK);
+        GUI_Text(100, 140, (uint8_t*)(game_state == GAME_OVER ? "GAME OVER!" : "VICTORY!"), 
+                game_state == GAME_OVER ? COLOR_RED : COLOR_YELLOW, COLOR_BLACK);
         char score_text[16];
         sprintf(score_text, "Final Score: %d", score);
         GUI_Text(80, 160, (uint8_t*)score_text, COLOR_WHITE, COLOR_BLACK);
@@ -145,8 +138,9 @@ void draw_game(int full_redraw) {
       
     if(full_redraw) {
         LCD_Clear(COLOR_BLACK);
-        
-      
+				if(game_state == GAME_PAUSED) {
+        GUI_Text(100, 160, (uint8_t*)"PAUSE", COLOR_WHITE, COLOR_BLACK);
+    }
         // Draw maze
         int i, j;
         for(i = 0; i < MAZE_HEIGHT; i++) {
@@ -206,4 +200,7 @@ void draw_game(int full_redraw) {
     char lives_text[16];
     sprintf(lives_text, "Lives: %d", lives);
     GUI_Text(8, 290, (uint8_t*)lives_text, COLOR_WHITE, COLOR_BLACK);
+		
+	
 }
+

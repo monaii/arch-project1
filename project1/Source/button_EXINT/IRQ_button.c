@@ -8,7 +8,8 @@
 void EINT0_IRQHandler (void) {
     if(game_state == GAME_RUNNING) {
         game_state = GAME_PAUSED;
-        GUI_Text(100, 160, (uint8_t*)"PAUSE", COLOR_WHITE, COLOR_BLACK);
+		   	draw_game(1);
+			
     }
     else if(game_state == GAME_PAUSED) {
         game_state = GAME_RUNNING;
