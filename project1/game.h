@@ -37,6 +37,7 @@
 #define TELEPORT_Y 15    // Specific Y position for teleport
 #define LEFT_EDGE 2
 #define RIGHT_EDGE 28
+#define TELEPORT 4
 
 // Game variables
 extern int game_state;

@@ -28,7 +28,17 @@ void init_game(void) {
             }
         }
     }
-    
+// Remove any pills near teleport zones
+for(int k = -1; k <= 1; k++) {
+    maze[TELEPORT_Y+k][LEFT_EDGE] = WALL;
+    maze[TELEPORT_Y+k][RIGHT_EDGE-1] = WALL;
+}
+// Make teleport zones thicker
+maze[TELEPORT_Y][LEFT_EDGE-1] = TELEPORT;
+maze[TELEPORT_Y][LEFT_EDGE] = TELEPORT;
+maze[TELEPORT_Y][RIGHT_EDGE-1] = TELEPORT;
+maze[TELEPORT_Y][RIGHT_EDGE] = TELEPORT;
+		
     // Add internal walls
     for(i = 5; i < MAZE_HEIGHT-5; i++) {
         maze[i][10] = WALL;
@@ -66,71 +76,70 @@ void update_game(void) {
     // Calculate next position
     int next_x = pacman_x;
     int next_y = pacman_y;
-    
-    // Only calculate next position if there's a direction
+
+    // Update based on current direction
     switch (current_direction) {
         case 1: next_y -= PACMAN_SPEED; break;  // UP
         case 2: next_y += PACMAN_SPEED; break;  // DOWN
         case 3: next_x -= PACMAN_SPEED; break;  // LEFT
         case 4: next_x += PACMAN_SPEED; break;  // RIGHT
-        default: return;  // No movement if no direction
+        default: return;  // No movement
     }
 
-// Check both edges for collision
-int maze_x1 = next_x / CELL_SIZE;
-int maze_y1 = next_y / CELL_SIZE;
-int maze_x2 = (next_x + PACMAN_SIZE-1) / CELL_SIZE;
-int maze_y2 = (next_y + PACMAN_SIZE-1) / CELL_SIZE;
-
-   // Check wall collision on both edges
-if (maze_x1 < 0 || maze_x2 >= MAZE_WIDTH || 
-    maze_y1 < 0 || maze_y2 >= MAZE_HEIGHT ||
-    ((maze_y1 != TELEPORT_Y) && (maze[maze_y1][maze_x1] == WALL || 
-    maze[maze_y2][maze_x2] == WALL ||
-    maze[maze_y1][maze_x2] == WALL ||
-    maze[maze_y2][maze_x1] == WALL))) {
-    current_direction = 0;
-    return;
-}
-// Add teleport code here
-if(next_y / CELL_SIZE == TELEPORT_Y) {
-    if(next_x < LEFT_EDGE * CELL_SIZE) {
-        next_x = (RIGHT_EDGE - 1) * CELL_SIZE;
-    } else if(next_x > (RIGHT_EDGE - 1) * CELL_SIZE) {
-        next_x = LEFT_EDGE * CELL_SIZE;
+// Handle teleportation (horizontal only)
+    if (next_y / CELL_SIZE == TELEPORT_Y) {
+        if (next_x < LEFT_EDGE * CELL_SIZE) {  // Teleport from left to right
+            next_x = (RIGHT_EDGE - 1) * CELL_SIZE;
+        } else if (next_x >= RIGHT_EDGE * CELL_SIZE) {  // Teleport from right to left
+            next_x = LEFT_EDGE * CELL_SIZE;
+        }
     }
-}
-    // If we get here, movement is valid
+		
+    // Convert to maze grid coordinates
+    int maze_x1 = next_x / CELL_SIZE;
+    int maze_y1 = next_y / CELL_SIZE;
+    int maze_x2 = (next_x + PACMAN_SIZE - 1) / CELL_SIZE;
+    int maze_y2 = (next_y + PACMAN_SIZE - 1) / CELL_SIZE;
+
+    // Check collision with walls
+    if (maze[maze_y1][maze_x1] == WALL || maze[maze_y1][maze_x2] == WALL ||
+        maze[maze_y2][maze_x1] == WALL || maze[maze_y2][maze_x2] == WALL) {
+        current_direction = 0;  // Stop movement
+        return;
+    }
+
+
+
+    // Update position
     pacman_x = next_x;
     pacman_y = next_y;
-    
+
     // Handle pill collection
-    if(maze[maze_y1][maze_x1] == PILL) {
+    if (maze[maze_y1][maze_x1] == PILL) {
         score += 10;
         maze[maze_y1][maze_x1] = EMPTY;
         pills_remaining--;
-        
-        // Check for extra life (Spec. 6)
-        if(score % 1000 == 0) {
+
+        // Check for extra life (every 1000 points)
+        if (score / 1000 > lives - 1) {
             lives++;
         }
-    }
-    else if(maze[maze_y1][maze_x1] == POWER_PILL) {
+    } else if (maze[maze_y1][maze_x1] == POWER_PILL) {
         score += 50;
         maze[maze_y1][maze_x1] = EMPTY;
         pills_remaining--;
-        
-        // Check for extra life here too
-        if(score % 1000 == 0) {
+
+        // Check for extra life
+        if (score / 1000 > lives - 1) {
             lives++;
         }
     }
 
-    // Victory condition - all pills collected
-    if(pills_remaining == 0) {
-        game_state = GAME_WIN;
-    }
+    // Victory condition
+ if(pills_remaining == 0) {
+        game_state = GAME_WIN;    }
 }
+
 void draw_game(int full_redraw) {
 	
    if(game_state == GAME_OVER || game_state == GAME_WIN) {
@@ -148,29 +157,26 @@ void draw_game(int full_redraw) {
 				if(game_state == GAME_PAUSED) {
         GUI_Text(100, 160, (uint8_t*)"PAUSE", COLOR_WHITE, COLOR_BLACK);
     }
-				
-	for(int x = 0; x < CELL_SIZE; x++) {
-   for(int y = 0; y < CELL_SIZE; y++) {
-       LCD_SetPoint(LEFT_EDGE * CELL_SIZE + x, 
-                   TELEPORT_Y * CELL_SIZE + y + maze_offset_y, COLOR_RED);
-       LCD_SetPoint((RIGHT_EDGE-1) * CELL_SIZE + x, 
-                   TELEPORT_Y * CELL_SIZE + y + maze_offset_y, COLOR_RED);
-   }
-}
 
         // Draw maze
         int i, j;
         for(i = 0; i < MAZE_HEIGHT; i++) {
             for(j = 0; j < MAZE_WIDTH; j++) {
                 switch(maze[i][j]) {
-                    case WALL:
-                        for(int wx = 0; wx < CELL_SIZE; wx++) {
-                            for(int wy = 0; wy < CELL_SIZE; wy++) {
-                                LCD_SetPoint(j*CELL_SIZE + wx, 
-                                           i*CELL_SIZE + wy + maze_offset_y, COLOR_BLUE);
-                            }
-                        }
-                        break;
+case WALL:
+    for(int tx = 0; tx < CELL_SIZE; tx++) {
+        for(int ty = 0; ty < CELL_SIZE; ty++) {
+            LCD_SetPoint(j*CELL_SIZE + tx, i*CELL_SIZE + ty + maze_offset_y, COLOR_BLUE);
+        }
+    }
+    break;
+case TELEPORT:
+    for(int px = 0; px < CELL_SIZE; px++) {
+        for(int py = 0; py < CELL_SIZE; py++) {
+            LCD_SetPoint(j*CELL_SIZE + px, i*CELL_SIZE + py + maze_offset_y, COLOR_RED);
+        }
+    }
+    break;
                     case PILL:
                         LCD_SetPoint(j*CELL_SIZE + CELL_SIZE/2, 
                                    i*CELL_SIZE + CELL_SIZE/2 + maze_offset_y, COLOR_WHITE);
