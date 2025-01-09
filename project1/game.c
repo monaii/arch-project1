@@ -13,7 +13,6 @@ int maze[MAZE_HEIGHT][MAZE_WIDTH] = {0};
 int pills_remaining = 0;
 int maze_offset_y = 40;  // Global maze offset
 int timer_ticks = 0;  
-int VICTORY_SCORE =3000;
 
 void init_game(void) {
     int i, j;
@@ -56,15 +55,11 @@ maze[TELEPORT_Y][RIGHT_EDGE] = TELEPORT;
     // Initialize game state
     LCD_Clear(COLOR_BLACK);
     game_state = GAME_PAUSED;
-    score = 0;
-    lives = 1;
-    countdown = 60;
-    pacman_x = 120;
-    pacman_y = 160;
+
     
     // Draw welcome screen
-    GUI_Text(100, 140, (uint8_t*)"PAC-MAN", COLOR_YELLOW, COLOR_BLACK);
-    GUI_Text(70, 160, (uint8_t*)"Press INT0 to Start", COLOR_WHITE, COLOR_BLACK);
+    GUI_Text(35, 140, (uint8_t*)"WELCOME TO PAC-MAN game", COLOR_YELLOW, COLOR_BLACK);
+    GUI_Text(25, 160, (uint8_t*)"PLEASE Press INT0 to Start", COLOR_WHITE, COLOR_BLACK);
 }
 
 void update_game(void) {
@@ -117,7 +112,7 @@ if (next_y / CELL_SIZE == TELEPORT_Y) {
         pills_remaining--;
 
         // Check for extra life (every 1000 points)
-        if (score / 1000 > lives - 1) {
+        if (score / 100 > lives - 1) {
             lives++;
         }
     } else if(maze[maze_y1][maze_x1] == POWER_PILL || 
@@ -137,7 +132,7 @@ if (next_y / CELL_SIZE == TELEPORT_Y) {
     }
 }
     // Victory condition
- if(pills_remaining == 0) {
+ if(pills_remaining == 0 || score >= 500) {
         game_state = GAME_WIN;    }
 }
 
@@ -145,11 +140,11 @@ void draw_game(int full_redraw) {
 	
    if(game_state == GAME_OVER || game_state == GAME_WIN) {
         LCD_Clear(COLOR_BLACK);
-        GUI_Text(100, 140, (uint8_t*)(game_state == GAME_OVER ? "GAME OVER!" : "VICTORY!"), 
-                game_state == GAME_OVER ? COLOR_RED : COLOR_YELLOW, COLOR_BLACK);
+		 GUI_Text(60, 140, (uint8_t*)(game_state == GAME_OVER ? "OOPS! GAME OVER " : "VICTORY! YOU WIN :)))"), 
+                game_state == GAME_OVER ? COLOR_RED : COLOR_GREEN, COLOR_BLACK);
         char score_text[16];
         sprintf(score_text, "Final Score: %d", score);
-        GUI_Text(80, 160, (uint8_t*)score_text, COLOR_WHITE, COLOR_BLACK);
+        GUI_Text(55, 160, (uint8_t*)score_text, COLOR_WHITE, COLOR_BLACK);
         return;
     }
       
