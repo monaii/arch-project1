@@ -28,16 +28,13 @@ void init_game(void) {
             }
         }
     }
-// Remove any pills near teleport zones
-for(int k = -1; k <= 1; k++) {
-    maze[TELEPORT_Y+k][LEFT_EDGE] = WALL;
-    maze[TELEPORT_Y+k][RIGHT_EDGE-1] = WALL;
-}
-// Make teleport zones thicker
-maze[TELEPORT_Y][LEFT_EDGE-1] = TELEPORT;
-maze[TELEPORT_Y][LEFT_EDGE] = TELEPORT;
-maze[TELEPORT_Y][RIGHT_EDGE-1] = TELEPORT;
+
+
+
+// Set teleport zones
+maze[TELEPORT_Y][LEFT_EDGE - 1] = TELEPORT;
 maze[TELEPORT_Y][RIGHT_EDGE] = TELEPORT;
+
 		
     // Add internal walls
     for(i = 5; i < MAZE_HEIGHT-5; i++) {
@@ -86,14 +83,15 @@ void update_game(void) {
         default: return;  // No movement
     }
 
-// Handle teleportation (horizontal only)
-    if (next_y / CELL_SIZE == TELEPORT_Y) {
-        if (next_x < LEFT_EDGE * CELL_SIZE) {  // Teleport from left to right
-            next_x = (RIGHT_EDGE - 1) * CELL_SIZE;
-        } else if (next_x >= RIGHT_EDGE * CELL_SIZE) {  // Teleport from right to left
-            next_x = LEFT_EDGE * CELL_SIZE;
-        }
+// Handle teleportation
+if (next_y / CELL_SIZE == TELEPORT_Y) {
+    // Check if we're entering from either side
+    if (next_x < LEFT_EDGE * CELL_SIZE) {
+        next_x = (RIGHT_EDGE - 1) * CELL_SIZE;
+    } else if (next_x > (RIGHT_EDGE - 1) * CELL_SIZE) {
+        next_x = LEFT_EDGE * CELL_SIZE;
     }
+}
 		
     // Convert to maze grid coordinates
     int maze_x1 = next_x / CELL_SIZE;
@@ -107,8 +105,6 @@ void update_game(void) {
         current_direction = 0;  // Stop movement
         return;
     }
-
-
 
     // Update position
     pacman_x = next_x;
@@ -134,7 +130,6 @@ void update_game(void) {
             lives++;
         }
     }
-
     // Victory condition
  if(pills_remaining == 0) {
         game_state = GAME_WIN;    }
@@ -164,19 +159,36 @@ void draw_game(int full_redraw) {
             for(j = 0; j < MAZE_WIDTH; j++) {
                 switch(maze[i][j]) {
 case WALL:
-    for(int tx = 0; tx < CELL_SIZE; tx++) {
-        for(int ty = 0; ty < CELL_SIZE; ty++) {
-            LCD_SetPoint(j*CELL_SIZE + tx, i*CELL_SIZE + ty + maze_offset_y, COLOR_BLUE);
+    for (int tx = 0; tx < CELL_SIZE; tx++) {
+        for (int ty = 0; ty < CELL_SIZE; ty++) {
+            if (i == TELEPORT_Y && (j == LEFT_EDGE - 1 || j == RIGHT_EDGE)) {
+                // Ensure teleport areas are always red
+                LCD_SetPoint(j * CELL_SIZE + tx, i * CELL_SIZE + ty + maze_offset_y, COLOR_RED);
+            } else {
+                LCD_SetPoint(j * CELL_SIZE + tx, i * CELL_SIZE + ty + maze_offset_y, COLOR_BLUE);
+            }
         }
     }
     break;
+
 case TELEPORT:
-    for(int px = 0; px < CELL_SIZE; px++) {
-        for(int py = 0; py < CELL_SIZE; py++) {
-            LCD_SetPoint(j*CELL_SIZE + px, i*CELL_SIZE + py + maze_offset_y, COLOR_RED);
+    // Draw teleport zones with the same size as Pac-Man
+    for (int px = 0; px < PACMAN_SIZE; px++) {
+        for (int py = 0; py < PACMAN_SIZE; py++) {
+            LCD_SetPoint(j * CELL_SIZE + px + (CELL_SIZE - PACMAN_SIZE) / 2,  // Center the zone
+                         i * CELL_SIZE + py + (CELL_SIZE - PACMAN_SIZE) / 2 + maze_offset_y,
+                         COLOR_RED);
         }
     }
     break;
+
+
+
+
+
+
+
+
                     case PILL:
                         LCD_SetPoint(j*CELL_SIZE + CELL_SIZE/2, 
                                    i*CELL_SIZE + CELL_SIZE/2 + maze_offset_y, COLOR_WHITE);
