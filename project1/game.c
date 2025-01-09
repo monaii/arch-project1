@@ -120,16 +120,22 @@ if (next_y / CELL_SIZE == TELEPORT_Y) {
         if (score / 1000 > lives - 1) {
             lives++;
         }
-    } else if (maze[maze_y1][maze_x1] == POWER_PILL) {
-        score += 50;
-        maze[maze_y1][maze_x1] = EMPTY;
-        pills_remaining--;
-
-        // Check for extra life
-        if (score / 1000 > lives - 1) {
-            lives++;
-        }
+    } else if(maze[maze_y1][maze_x1] == POWER_PILL || 
+        maze[maze_y2][maze_x1] == POWER_PILL || 
+        maze[maze_y1][maze_x2] == POWER_PILL || 
+        maze[maze_y2][maze_x2] == POWER_PILL) {
+    score += 50;
+    // Clear all power pill cells that were detected
+    if(maze[maze_y1][maze_x1] == POWER_PILL) maze[maze_y1][maze_x1] = EMPTY;
+    if(maze[maze_y2][maze_x1] == POWER_PILL) maze[maze_y2][maze_x1] = EMPTY;
+    if(maze[maze_y1][maze_x2] == POWER_PILL) maze[maze_y1][maze_x2] = EMPTY;
+    if(maze[maze_y2][maze_x2] == POWER_PILL) maze[maze_y2][maze_x2] = EMPTY;
+    pills_remaining--;
+    
+    if(score % 1000 == 0) {
+        lives++;
     }
+}
     // Victory condition
  if(pills_remaining == 0) {
         game_state = GAME_WIN;    }
@@ -183,24 +189,25 @@ case TELEPORT:
     break;
 
 
+                   case PILL:
+    LCD_SetPoint(j*CELL_SIZE + CELL_SIZE/2 + 2, 
+                 i*CELL_SIZE + CELL_SIZE/2 + 2 + maze_offset_y, COLOR_WHITE);
+    LCD_SetPoint(j*CELL_SIZE + CELL_SIZE/2 + 2, 
+                 i*CELL_SIZE + CELL_SIZE/2 + 1 + maze_offset_y, COLOR_WHITE);
+    LCD_SetPoint(j*CELL_SIZE + CELL_SIZE/2 + 1, 
+                 i*CELL_SIZE + CELL_SIZE/2 + 2 + maze_offset_y, COLOR_WHITE);
+    LCD_SetPoint(j*CELL_SIZE + CELL_SIZE/2 + 1, 
+                 i*CELL_SIZE + CELL_SIZE/2 + 1 + maze_offset_y, COLOR_WHITE);
+    break;
 
-
-
-
-
-
-                    case PILL:
-                        LCD_SetPoint(j*CELL_SIZE + CELL_SIZE/2, 
-                                   i*CELL_SIZE + CELL_SIZE/2 + maze_offset_y, COLOR_WHITE);
-                        break;
-                    case POWER_PILL:
-                        for(int p = 0; p < 2; p++) {
-                            for(int q = 0; q < 2; q++) {
-                                LCD_SetPoint(j*CELL_SIZE + CELL_SIZE/2 + p, 
-                                           i*CELL_SIZE + CELL_SIZE/2 + q + maze_offset_y, COLOR_WHITE);
-                            }
-                        }
-                        break;
+case POWER_PILL:
+    for(int p = 0; p < 5; p++) {
+        for(int q = 0; q <5; q++) {
+            LCD_SetPoint(j*CELL_SIZE + CELL_SIZE/2 + p, 
+                        i*CELL_SIZE + CELL_SIZE/2 + q + maze_offset_y, COLOR_GREEN);
+        }
+    }
+    break;
                 }
             }
         }
