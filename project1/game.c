@@ -201,8 +201,8 @@ case TELEPORT:
     break;
 
 case POWER_PILL:
-    for(int p = 0; p < 5; p++) {
-        for(int q = 0; q <5; q++) {
+    for(int p = 0; p < 4; p++) {
+        for(int q = 0; q <4; q++) {
             LCD_SetPoint(j*CELL_SIZE + CELL_SIZE/2 + p, 
                         i*CELL_SIZE + CELL_SIZE/2 + q + maze_offset_y, COLOR_GREEN);
         }

@@ -19,7 +19,7 @@
 #define COLOR_GREEN 0x07E0
 
 // Pac-Man settings
-#define PACMAN_SPEED 4
+#define PACMAN_SPEED 8
 #define PACMAN_SIZE 8
 
 
